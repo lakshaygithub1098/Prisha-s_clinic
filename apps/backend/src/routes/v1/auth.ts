@@ -12,14 +12,14 @@ const otpVerifyLimiter = rateLimit({ windowMs: 15 * 60_000, limit: env.MOCK_OTP 
 const mobileSchema = z.string().regex(/^\+?[1-9]\d{9,14}$/);
 authRouter.post("/patient/otp", otpRequestLimiter, async (req, res, next) => {
   try {
-    if (!env.MOCK_OTP) { res.status(503).json({ error: { code: "OTP_PROVIDER_NOT_CONFIGURED", message: "Configure an SMS provider before enabling patient sign-in." } }); return; }
+    if (!env.MOCK_OTP || env.APP_ENV === "production") { res.status(503).json({ error: { code: "OTP_PROVIDER_NOT_CONFIGURED", message: "Configure an SMS provider before enabling patient sign-in." } }); return; }
     const parsed = z.object({ mobile: mobileSchema }).safeParse(req.body);
     if (!parsed.success) { res.status(400).json({ error: { code: "INVALID_MOBILE", message: "Enter a valid mobile number." } }); return; }
     const mobile = parsed.data.mobile.startsWith("+") ? parsed.data.mobile : `+91${parsed.data.mobile}`;
     const code = newTestOtp(mobile);
     await OTPRequest.updateMany({ mobile, purpose: "login", consumedAt: { $exists: false } }, { $set: { consumedAt: new Date() } });
     await OTPRequest.create({ mobile, purpose: "login", codeHash: otpDigest(mobile, code), expiresAt: new Date(Date.now() + 5 * 60_000), attempts: 0 });
-    res.json({ ok: true, ...(env.NODE_ENV !== "production" ? { debugCode: code } : {}) });
+    res.json({ ok: true, debugCode: code });
   } catch (error) { next(error); }
 });
 

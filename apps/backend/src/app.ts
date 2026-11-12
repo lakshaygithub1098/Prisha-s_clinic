@@ -5,6 +5,7 @@ import helmet from "helmet";
 import { env } from "./config/env";
 import { errorHandler, notFound } from "./middleware/errors";
 import { requestId } from "./middleware/request-id";
+import { connectDatabase } from "./db/connection";
 import { healthRouter } from "./routes/v1/health";
 import { authRouter } from "./routes/v1/auth";
 import { appointmentsRouter } from "./routes/v1/appointments";
@@ -33,6 +34,12 @@ export function createApp() {
     standardHeaders: "draft-8",
     legacyHeaders: false,
   }));
+  if (process.env.VERCEL) {
+    app.use("/api/v1", async (req, _res, next) => {
+      if (req.path === "/health" || req.path === "/ready") { next(); return; }
+      try { await connectDatabase(); next(); } catch (error) { next(error); }
+    });
+  }
   app.use("/api/v1", healthRouter);
   app.use("/api/v1/auth", authRouter);
   app.use("/api/v1/appointments", appointmentsRouter);
