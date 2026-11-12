@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: prisha-clinic-api
+    runtime: node
+    plan: free
+    rootDir: .
+    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @prisha/backend build
+    startCommand: pnpm --filter @prisha/backend start
+    healthCheckPath: /api/v1/ready
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: APP_ENV
+        value: production
+      - key: MONGODB_DATABASE
+        value: prisha_clinic
+      - key: MOCK_OTP
+        value: "false"
+      - key: OTP_PEPPER
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: https://patient-web-lakshaypal20232704-6255s-projects.vercel.app,https://patient-web-git-vercel-test-lakshaypal20232704-6255s-projects.vercel.app,https://doctor-portal-lakshaypal20232704-6255s-projects.vercel.app,https://doctor-portal-git-vercel-test-lakshaypal20232704-6255s-projects.vercel.app
+      - key: MONGODB_URI
+        sync: false

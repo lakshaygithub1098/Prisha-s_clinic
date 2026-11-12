@@ -37,6 +37,14 @@ Doctor/admin test emails: `test.gynae@prisha.local`, `test.thyroid@prisha.local`
 
 The frontends proxy `/api/v1` through their own origin using `BACKEND_API_URL` in deployment settings. This keeps browser session cookies first-party even though the patient and doctor apps deploy separately.
 
+## Deploy the API to Render
+
+The root [`render.yaml`](render.yaml) defines a production-configured API service. It selects the separate `prisha_clinic` database, disables mock OTP, generates an OTP pepper, and does not seed or insert test records. Import the repository's `render-production` branch as a Render Blueprint and enter the production Atlas URI in Render's secret field. Do not reuse the development database. After Render shows the service URL, set it as `BACKEND_API_URL` in both Vercel projects and redeploy them.
+
+This configuration alone does not make the current app ready for patient use: the SMS OTP provider is not implemented, new databases have no doctor/admin accounts or appointment availability, and several portal workflows are still UI-only. Patient OTP requests will return `503` until a real SMS provider is integrated. Do not enter real patient data until these gaps and the clinic's operational, privacy, security, and backup requirements are addressed.
+
+Render Free services spin down after 15 minutes without traffic and can take about a minute to wake up, so the free plan is suitable for deployment experience rather than reliable clinic operations.
+
 ## Routes
 
 - Public website: `/`, `/about`, `/services`, `/contact`, `/book`
