@@ -1,0 +1,15 @@
+{
+  "name": "prisha-clinic",
+  "private": true,
+  "packageManager": "pnpm@10.10.0",
+  "scripts": {
+    "dev:patient": "pnpm --filter @prisha/patient-web dev",
+    "build:patient": "pnpm --filter @prisha/patient-web build",
+    "dev:doctor": "pnpm --filter @prisha/doctor-portal dev",
+    "build:doctor": "pnpm --filter @prisha/doctor-portal build",
+    "dev:api": "pnpm --filter @prisha/backend dev",
+    "build:api": "pnpm --filter @prisha/backend build",
+    "start:api": "pnpm --filter @prisha/backend start",
+    "seed:dev": "pnpm --filter @prisha/backend seed:dev"
+  }
+}

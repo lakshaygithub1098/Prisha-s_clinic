@@ -1,0 +1,7 @@
+import type { LucideIcon } from "lucide-react";
+
+export function Title({ eyebrow, title, detail }: { eyebrow: string; title: string; detail: string }) { return <div><div className="text-xs font-bold uppercase tracking-[.14em] text-forest">{eyebrow}</div><h1 className="display mt-2 text-3xl text-charcoal">{title}</h1><p className="mt-2 text-sm leading-6 text-slate-500">{detail}</p></div>; }
+export function Stat({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) { return <div className="surface flex items-center gap-3 rounded-2xl p-4"><span className="grid h-11 w-11 place-items-center rounded-xl bg-mint text-forest"><Icon size={20}/></span><div><div className="text-xs text-slate-500">{label}</div><div className="mt-1 text-lg font-bold">{value}</div></div></div>; }
+export function Panel({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) { return <section className="surface rounded-2xl p-5 sm:p-6"><div className="mb-5 flex items-center justify-between gap-3"><h2 className="font-semibold">{title}</h2>{action}</div>{children}</section>; }
+export const demoPatients = ["Patient 001", "Patient 002", "Patient 003", "Patient 004"];
+export const demoAppointments = [{time:"09:30 AM",patient:"Patient 001",type:"Gynaecology",status:"Confirmed"},{time:"10:30 AM",patient:"Patient 002",type:"Thyroid care",status:"Confirmed"},{time:"11:00 AM",patient:"Patient 003",type:"Follow-up",status:"Pending"},{time:"12:00 PM",patient:"Patient 004",type:"Gynaecology",status:"Confirmed"}];

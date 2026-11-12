@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+* { box-sizing: border-box; }
+body { margin: 0; background: #f6f8f5; color: #263a32; font-family: Inter, "Segoe UI", Arial, sans-serif; }
+button,input,select,textarea { font: inherit; }
+.display { font-family: Inter, "Segoe UI", Arial, sans-serif; font-weight: 650; letter-spacing: -.035em; }
+.surface { background:white; border:1px solid #e6eee8; box-shadow:0 10px 34px rgba(26,74,55,.06); }
+.field { width:100%; border:1px solid #d6e4da; border-radius:11px; background:white; padding:11px 13px; outline:none; }
+.field:focus { border-color:#16825f; box-shadow:0 0 0 3px rgba(22,130,95,.12); }
