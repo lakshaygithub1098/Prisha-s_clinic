@@ -1,4 +1,4 @@
-import { createHash, createHmac, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import type { Request, Response } from "express";
 import mongoose from "mongoose";
 import { env } from "../config/env";
@@ -6,20 +6,9 @@ import { Patient, Session, User } from "../models";
 
 export const SESSION_COOKIE = "prisha_session";
 const sessionDurationMs = 12 * 60 * 60 * 1000;
-const otpPepper = env.OTP_PEPPER || "local-test-only-otp-pepper";
 
 export function hashOpaqueToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
-}
-
-function hashOtp(mobile: string, code: string): string {
-  return createHmac("sha256", otpPepper).update(`${mobile}:${code}`).digest("hex");
-}
-
-export function verifyOtpHash(mobile: string, code: string, expected: string): boolean {
-  const provided = Buffer.from(hashOtp(mobile, code), "hex");
-  const stored = Buffer.from(expected, "hex");
-  return provided.length === stored.length && timingSafeEqual(provided, stored);
 }
 
 export function readSessionCookie(req: Request): string | undefined {
@@ -52,14 +41,6 @@ export async function createSession(userId: mongoose.Types.ObjectId, res: Respon
   const rawToken = randomBytes(32).toString("base64url");
   await Session.create({ tokenHash: hashOpaqueToken(rawToken), userId, expiresAt: new Date(Date.now() + sessionDurationMs) });
   setSessionCookie(res, rawToken);
-}
-
-export function newTestOtp(mobile: string): string {
-  return randomInt(0, 1_000_000).toString().padStart(6, "0");
-}
-
-export function otpDigest(mobile: string, code: string): string {
-  return hashOtp(mobile, code);
 }
 
 export async function authenticateToken(rawToken: string) {

@@ -21,8 +21,6 @@ const envSchema = z.object({
   HOST: z.string().min(1).optional(),
   MONGODB_URI: z.string().trim().optional().transform((value) => value || undefined),
   MONGODB_DATABASE: z.string().trim().min(1).default("prisha_clinic_test"),
-  OTP_PEPPER: z.string().min(32).optional(),
-  MOCK_OTP: z.enum(["true", "false"]).default(deploymentDefault === "production" ? "false" : "true").transform((value) => value === "true"),
   CORS_ORIGINS: z.string().default("http://localhost:3000,http://localhost:4000"),
 });
 
@@ -38,8 +36,8 @@ if (parsed.data.MONGODB_URI && !/^mongodb(?:\+srv)?:\/\//i.test(parsed.data.MONG
   process.exit(1);
 }
 
-if (parsed.data.APP_ENV === "production" && (parsed.data.MOCK_OTP || parsed.data.MONGODB_DATABASE === "prisha_clinic_test" || !parsed.data.OTP_PEPPER)) {
-  console.error("Production requires a non-test MongoDB database, OTP_PEPPER, and MOCK_OTP=false.");
+if (parsed.data.APP_ENV === "production" && parsed.data.MONGODB_DATABASE === "prisha_clinic_test") {
+  console.error("Production requires a non-test MongoDB database.");
   process.exit(1);
 }
 
