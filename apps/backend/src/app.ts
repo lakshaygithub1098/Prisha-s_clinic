@@ -15,6 +15,9 @@ export function createApp() {
   const allowedOrigins = new Set(env.CORS_ORIGINS);
 
   app.disable("x-powered-by");
+  // Render terminates TLS at one reverse proxy and forwards the client address.
+  // Trust only that hop; never trust every forwarded address in production.
+  app.set("trust proxy", env.NODE_ENV === "production" ? 1 : false);
   app.use(helmet());
   app.use(requestId);
   app.use(cors({
@@ -33,6 +36,8 @@ export function createApp() {
     limit: 120,
     standardHeaders: "draft-8",
     legacyHeaders: false,
+    // Express uses X-Forwarded-For for req.ip; it does not parse RFC 7239 Forwarded.
+    validate: { forwardedHeader: false },
   }));
   if (process.env.VERCEL) {
     app.use("/api/v1", async (req, _res, next) => {

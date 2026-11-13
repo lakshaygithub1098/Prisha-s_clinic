@@ -10,8 +10,8 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { env } from "../../config/env";
 
 export const authRouter = Router();
-const patientAuthLimiter = rateLimit({ windowMs: 15 * 60_000, limit: 10, standardHeaders: "draft-8", legacyHeaders: false });
-const doctorSignupLimiter = rateLimit({ windowMs: 15 * 60_000, limit: 5, standardHeaders: "draft-8", legacyHeaders: false });
+const patientAuthLimiter = rateLimit({ windowMs: 15 * 60_000, limit: 10, standardHeaders: "draft-8", legacyHeaders: false, validate: { forwardedHeader: false } });
+const doctorSignupLimiter = rateLimit({ windowMs: 15 * 60_000, limit: 5, standardHeaders: "draft-8", legacyHeaders: false, validate: { forwardedHeader: false } });
 const patientProfileSchema = z.object({
   email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
   password: z.string().min(12).max(72),
