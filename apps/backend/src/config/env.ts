@@ -21,6 +21,7 @@ const envSchema = z.object({
   HOST: z.string().min(1).optional(),
   MONGODB_URI: z.string().trim().optional().transform((value) => value || undefined),
   MONGODB_DATABASE: z.string().trim().min(1).default("prisha_clinic_test"),
+  DOCTOR_SIGNUP_INVITE_CODE: z.string().min(24).optional(),
   CORS_ORIGINS: z.string().default("http://localhost:3000,http://localhost:4000"),
 });
 

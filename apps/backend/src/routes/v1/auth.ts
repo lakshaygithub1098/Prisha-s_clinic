@@ -2,18 +2,45 @@ import { Router } from "express";
 import { rateLimit } from "express-rate-limit";
 import { z } from "zod";
 import { requireAuth } from "../../middleware/auth";
-import { Patient, User } from "../../models";
+import { Doctor, Patient, User } from "../../models";
 import { createSession, readSessionCookie, revokeSession, clearSessionCookie } from "../../services/auth";
 import { writeAudit } from "../../services/audit";
 import bcrypt from "bcryptjs";
+import { createHash, timingSafeEqual } from "node:crypto";
+import { env } from "../../config/env";
 
 export const authRouter = Router();
 const patientAuthLimiter = rateLimit({ windowMs: 15 * 60_000, limit: 10, standardHeaders: "draft-8", legacyHeaders: false });
+const doctorSignupLimiter = rateLimit({ windowMs: 15 * 60_000, limit: 5, standardHeaders: "draft-8", legacyHeaders: false });
 const patientProfileSchema = z.object({
   email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
   password: z.string().min(12).max(72),
   givenName: z.string().trim().min(1).max(80),
   familyName: z.string().trim().max(80).optional(),
+});
+
+authRouter.post("/doctor/register", doctorSignupLimiter, async (req, res, next) => {
+  try {
+    if (!env.DOCTOR_SIGNUP_INVITE_CODE) { res.status(503).json({ error: { code: "DOCTOR_SIGNUP_DISABLED", message: "Doctor account creation is not enabled. Ask the clinic administrator for access." } }); return; }
+    const parsed = z.object({
+      email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
+      password: z.string().min(12).max(72),
+      displayName: z.string().trim().min(2).max(120),
+      inviteCode: z.string().min(1).max(256),
+    }).safeParse(req.body);
+    if (!parsed.success || (parsed.success && Buffer.byteLength(parsed.data.password, "utf8") > 72)) {
+      res.status(400).json({ error: { code: "INVALID_INPUT", message: "Enter a valid name and email, an invite code, and a password of at least 12 characters." } }); return;
+    }
+    const expected = createHash("sha256").update(env.DOCTOR_SIGNUP_INVITE_CODE).digest();
+    const received = createHash("sha256").update(parsed.data.inviteCode).digest();
+    if (!timingSafeEqual(expected, received)) { res.status(403).json({ error: { code: "INVITE_INVALID", message: "The clinic invite code is invalid." } }); return; }
+    if (await User.exists({ email: parsed.data.email })) { res.status(409).json({ error: { code: "EMAIL_IN_USE", message: "An account with this email already exists. Sign in instead." } }); return; }
+    const user = await User.create({ email: parsed.data.email, role: "doctor", status: "active", passwordHash: await bcrypt.hash(parsed.data.password, 12) });
+    const doctor = await Doctor.create({ userId: user._id, displayName: parsed.data.displayName, specialityIds: [], active: true, publicProfile: { qualifications: [], achievements: [], areasOfExpertise: [] } });
+    await createSession(user._id, res);
+    await writeAudit(req, res, { action: "doctor.register", resourceType: "doctor", resourceId: doctor._id, outcome: "success" });
+    res.status(201).json({ ok: true, doctor: { id: doctor._id, displayName: doctor.displayName } });
+  } catch (error) { next(error); }
 });
 
 authRouter.post("/patient/register", patientAuthLimiter, async (req, res, next) => {
