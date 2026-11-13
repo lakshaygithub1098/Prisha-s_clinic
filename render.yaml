@@ -17,6 +17,6 @@ services:
       - key: DOCTOR_SIGNUP_INVITE_CODE
         sync: false
       - key: CORS_ORIGINS
-        value: https://patient-web-lakshaypal20232704-6255s-projects.vercel.app,https://patient-web-git-vercel-test-lakshaypal20232704-6255s-projects.vercel.app,https://doctor-portal-lakshaypal20232704-6255s-projects.vercel.app,https://doctor-portal-git-vercel-test-lakshaypal20232704-6255s-projects.vercel.app
+        value: https://patient-web-weld.vercel.app,https://doctor-portal-mu-self.vercel.app
       - key: MONGODB_URI
         sync: false
